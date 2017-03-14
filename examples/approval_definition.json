@@ -1,0 +1,32 @@
+{
+    "actionGroups": [
+        {
+            "condition": "AND",
+            "actions": [
+                {
+                    "type": "Approval",
+                    "title": "Person 1 Approval",
+                    "description": "Must be approved by person 1",
+                    "person": "jim@example.com"
+                },
+                {
+                    "type": "Approval",
+                    "title": "Person 2 Approval",
+                    "description": "Must be approved by person 2",
+                    "person": "bob@example.com"
+                }
+            ]
+        },
+        {
+            "condition": "AND",
+            "actions": [
+                {
+                    "type": "Approval",
+                    "title": "Finance approval",
+                    "description": "Must be approved by person 2",
+                    "group": "Finance"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkFlow", "WorkFlow.csproj", "{FEB6656F-3339-47BF-B2F9-1117A7E9490C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{C05D5E8E-8102-49F1-B6F7-C09B251BA6A3}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\examples\approval_definition.json = ..\..\examples\approval_definition.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkFlowExample", "..\WorkFlowExample\WorkFlowExample.csproj", "{DFDC7BFB-CE72-46D7-B7EB-282AE39C656F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEB6656F-3339-47BF-B2F9-1117A7E9490C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEB6656F-3339-47BF-B2F9-1117A7E9490C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEB6656F-3339-47BF-B2F9-1117A7E9490C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEB6656F-3339-47BF-B2F9-1117A7E9490C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFDC7BFB-CE72-46D7-B7EB-282AE39C656F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDC7BFB-CE72-46D7-B7EB-282AE39C656F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDC7BFB-CE72-46D7-B7EB-282AE39C656F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDC7BFB-CE72-46D7-B7EB-282AE39C656F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
