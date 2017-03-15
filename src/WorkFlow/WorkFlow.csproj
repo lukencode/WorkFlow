@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="IWorkFlowStorage.cs" />
     <Compile Include="MemoryWorkflowStorage.cs" />
+    <Compile Include="Model\WorkflowPart.cs" />
     <Compile Include="Model\StepGroup.cs" />
     <Compile Include="Model\Step.cs" />
     <Compile Include="Model\Condition.cs" />

@@ -11,9 +11,14 @@ namespace WorkFlowExample
     {
         protected override void OnEnter()
         {
+            Update(GetInput(), user: "system");
+        }
+
+        private Status GetInput()
+        {
             Console.WriteLine($"Entering {Title}: { Id }. Waiting for input...");
             var input = Console.ReadLine();
-            Update(Status.Accepted, user: "system", note: input);
+            return (Status)Enum.Parse(typeof(Status), input);
         }
 
         protected override void OnExit()
@@ -23,7 +28,7 @@ namespace WorkFlowExample
 
         protected override void OnUpdate(Dictionary<string, object> data)
         {
-            Console.WriteLine($"Updating {Title}: { Id } with state: { Status } and note '{Note}'");
+            Console.WriteLine($"Updating {Title}: { Id } with state: { Status }");
         }
     }
 }

@@ -6,34 +6,33 @@ using System.Threading.Tasks;
 
 namespace WorkFlow.Model
 {
-    public abstract class Step
+    public abstract class Step : WorkFlowPart
     {
-        internal WorkFlowState State;
-
-        public string Id { get; private set; }
         public string Title { get; set; }
         public string Note { get; private set; }
         public string User { get; private set; }
 
         public DateTime? Started { get; private set; }
         public DateTime? Updated { get; private set; }
-        public Status Status { get; private set; }
+        public Status Status { get; private set; } = Status.Pending;
 
         public bool CanUpdate => Status == Status.Started;
-
-        internal void AddToWorkFlow (WorkFlowState state)
+        
+        public override Status GetStatus()
         {
-            Id = Guid.NewGuid().ToString();
-            State = state;
+            return Status;
         }
 
-        internal void Enter()
+        internal override void Enter()
         {
             Started = DateTime.UtcNow;
             Status = Status.Started;
             OnEnter();
+        }
 
-            State.Save();
+        internal override IEnumerable<WorkFlowPart> GetAllSteps()
+        {
+            return new List<WorkFlowPart> { this };
         }
 
         public void Update(Status status, string user = null, string note = null, Dictionary<string, object> data = null)
@@ -52,12 +51,11 @@ namespace WorkFlow.Model
                 OnExit();
                 State.Run();
             }
-
-            State.Save();
         }
 
         protected abstract void OnEnter();
         protected abstract void OnUpdate(Dictionary<string, object> data);
         protected abstract void OnExit();
+
     }
 }

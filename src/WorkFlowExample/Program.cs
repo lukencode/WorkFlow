@@ -15,19 +15,7 @@ namespace WorkFlowExample
         static void Main(string[] args)
         {
             var workflow = GetNewWorkFlow();
-            storage.Save(workflow);
-
-            Console.ReadLine();
-
-            var savedWorkflow = storage.Load(workflow.Id);
-            savedWorkflow.Run();
-
-            //var next = savedWorkflow.GetNextSteps();
-
-            //foreach (var n in savedWorkflow.GetNextSteps())
-            //{
-            //    n.Update(Status.Accepted, "system");
-            //}
+            workflow.Run();
 
             Console.ReadLine();
         }
@@ -35,18 +23,27 @@ namespace WorkFlowExample
         private static WorkFlowState GetNewWorkFlow()
         {
             var workflow =
-                new WorkFlowState(storage)
-                        .AddStep(new WriteLineStep
+                new WorkFlowState()
+                        .AddStep(new StepGroup
                         {
-                            Title = "Step 1"
-                        })
-                        .AddStep(new WaitReadLineStep
-                        {
-                            Title = "Waiting Step 2"
-                        })
-                        .AddStep(new WriteLineStep
-                        {
-                            Title = "Step 3"
+                            Steps = new List<WorkFlowPart>()
+                            {
+                                new WaitReadLineStep { Title = "Step 1" },
+                                new StepGroup
+                                {
+                                    Condition = Condition.AND,
+                                    Steps = new List<WorkFlowPart>()
+                                    {
+                                        new WaitReadLineStep { Title = "Step 2.1" },
+                                        new WaitReadLineStep { Title = "Step 2.2" },
+                                        new WaitReadLineStep { Title = "Step 2.3" }
+                                    }
+                                },
+                                new WaitReadLineStep
+                                {
+                                    Title = "Step 3"
+                                }
+                            }
                         });
 
             return workflow;

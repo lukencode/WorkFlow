@@ -11,44 +11,52 @@ namespace WorkFlow.Model
         private readonly IWorkFlowStorage storage;
 
         public string Id { get; private set; }
-        public List<Step> Steps { get; private set; }
+        //public List<Step> Steps { get; private set; }
+
+        public List<WorkFlowPart> Steps { get; private set; }
 
         public WorkFlowState()
         {
             Id = Guid.NewGuid().ToString();
-            Steps = new List<Step>();
+            Steps = new List<WorkFlowPart>();
         }
 
         public WorkFlowState(IWorkFlowStorage storage) : this()
         {
-            storage = this.storage;
+            this.storage = storage;
         }
 
-        public WorkFlowState AddStep(Step step)
+        public WorkFlowState AddStep(WorkFlowPart step)
         {
             step.AddToWorkFlow(this);
             Steps.Add(step);
             return this;
         }
 
-        public List<Step> GetNextSteps()
+        public WorkFlowPart GetNextStep()
         {
-            var next = Steps.Where(x => x.Status == Status.Pending).Take(1); //todo this would change with grouping
-            return next.ToList();
+            this is broke
+            return Steps.Where(x => x.GetStatus() == Status.Pending).FirstOrDefault();
         }
 
-        public List<Step> GetStartedSteps()
+        public List<WorkFlowPart> GetStartedSteps()
         {
-            var started = Steps.Where(x => x.Status == Status.Started);
+            var started = Steps.Where(x => x.GetStatus() == Status.Started);
             return started.ToList();
+        }
+
+        public WorkFlowPart GetStep(string id)
+        {
+            return Steps.SelectMany(x => x.GetAllSteps()).FirstOrDefault(x => x.Id == id);
         }
 
         public void Run()
         {
-            var next = GetNextSteps();
-            foreach (var n in next)
+            var next = GetNextStep();
+            if (next != null)
             {
-                n.Enter();
+                next.Enter();
+                Save();
             }
         }
 
