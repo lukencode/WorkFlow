@@ -61,6 +61,26 @@ namespace WorkFlow.Model
             }
         }
 
+        internal override List<WorkFlowPart> GetNextSteps()
+        {
+            var pending = Steps.Where(x => x.GetStatus() == Status.Pending);
+            if (Condition == Condition.AND)
+            {
+                if(pending.Any()) return new List<WorkFlowPart> { pending.FirstOrDefault() };
+            }
+            else if(Condition == Condition.OR)
+            {
+                return pending.ToList();
+            }
+
+            return new List<WorkFlowPart>();
+        }
+
+        internal override List<WorkFlowPart> GetStartedSteps()
+        {
+            return Steps.Where(x => x.GetStatus() == Status.Started).ToList();
+        }
+
         internal override void AddToWorkFlow(WorkFlowState state)
         {
             base.AddToWorkFlow(state);

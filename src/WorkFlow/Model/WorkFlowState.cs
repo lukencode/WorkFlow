@@ -13,12 +13,11 @@ namespace WorkFlow.Model
         public string Id { get; private set; }
         //public List<Step> Steps { get; private set; }
 
-        public List<WorkFlowPart> Steps { get; private set; }
+        public StepGroup Root  { get; private set; }
 
         public WorkFlowState()
         {
             Id = Guid.NewGuid().ToString();
-            Steps = new List<WorkFlowPart>();
         }
 
         public WorkFlowState(IWorkFlowStorage storage) : this()

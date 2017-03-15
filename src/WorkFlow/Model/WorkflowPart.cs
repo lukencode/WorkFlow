@@ -22,5 +22,7 @@ namespace WorkFlow.Model
         }
 
         internal abstract IEnumerable<WorkFlowPart> GetAllSteps();
+        internal abstract List<WorkFlowPart> GetNextSteps();
+        internal abstract List<WorkFlowPart> GetStartedSteps();
     }
 }
