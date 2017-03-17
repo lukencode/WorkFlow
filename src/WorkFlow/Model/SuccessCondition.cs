@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace WorkFlow.Model
 {
-    public enum Status
+    public enum SuccessCondition
     {
-        None,
-        InProgress,
-        Success,
-        Failure,
-        Skipped
+        All,
+        Any
     }
 }

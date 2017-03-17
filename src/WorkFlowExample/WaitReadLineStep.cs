@@ -7,7 +7,7 @@ using WorkFlow.Model;
 
 namespace WorkFlowExample
 {
-    public class WaitReadLineStep : Step
+    public class WaitReadLineStep : WorkFlow.Model.Action
     {
         protected override void OnEnter()
         {
@@ -16,19 +16,19 @@ namespace WorkFlowExample
 
         private Status GetInput()
         {
-            Console.WriteLine($"Entering {Title}: { Id }. Waiting for input...");
+            Console.WriteLine($"Entering {Name}: { Id }. Waiting for input...");
             var input = Console.ReadLine();
             return (Status)Enum.Parse(typeof(Status), input);
         }
 
         protected override void OnExit()
         {
-            Console.WriteLine($"Exiting {Title}: { Id } with state: { Status }");
+            Console.WriteLine($"Exiting {Name}: { Id } with state: { Status }");
         }
 
         protected override void OnUpdate(Dictionary<string, object> data)
         {
-            Console.WriteLine($"Updating {Title}: { Id } with state: { Status }");
+            Console.WriteLine($"Updating {Name}: { Id } with state: { Status }");
         }
     }
 }

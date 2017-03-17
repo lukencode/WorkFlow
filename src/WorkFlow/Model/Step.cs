@@ -1,76 +1,92 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace WorkFlow.Model
 {
-    public abstract class Step : WorkFlowPart
+    public class Step
     {
-        public string Title { get; set; }
-        public string Note { get; private set; }
-        public string User { get; private set; }
+        public string Id { get; private set; }
+        public string Name { get; set; }
+        public StartCondition StartCondition { get; set; } = StartCondition.Success;
+        public StartTrigger StartTrigger { get; set; } = StartTrigger.StartAfterPrevious;
+        public SuccessCondition SuccessCondition { get; set; } = SuccessCondition.All;
+        public ObservableCollection<Action> Actions { get; set; }
 
-        public DateTime? Started { get; private set; }
-        public DateTime? Updated { get; private set; }
-        public Status Status { get; private set; } = Status.Pending;
+        internal event EventHandler OnUpdateEvent;
+        internal event EventHandler OnExitEvent;
 
-        public bool CanUpdate => Status == Status.Started;
-        private List<WorkFlowPart> ListOfThis => new List<WorkFlowPart> { this };
-
-
-        public override Status GetStatus()
+        public Step()
         {
-            return Status;
+            Actions = new ObservableCollection<Action>();
+            Actions.CollectionChanged += ActionsChanged;
+            Id = Guid.NewGuid().ToString();
         }
 
-        internal override void Enter()
+        private void ActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Started = DateTime.UtcNow;
-            Status = Status.Started;
-            OnEnter();
-        }
-
-
-        internal override IEnumerable<WorkFlowPart> GetAllSteps()
-        {
-            return ListOfThis;
-        }
-
-        internal override List<WorkFlowPart> GetNextSteps()
-        {
-            if (Status == Status.Pending) return ListOfThis;
-            return new List<WorkFlowPart>();
-        }
-
-        internal override List<WorkFlowPart> GetStartedSteps()
-        {
-            if (Status == Status.Started) return ListOfThis;
-            return new List<WorkFlowPart>();
-        }
-
-        public void Update(Status status, string user = null, string note = null, Dictionary<string, object> data = null)
-        {
-            if (!CanUpdate) throw new ApplicationException("Cannot update a step without Started status");
-
-            Updated = DateTime.UtcNow;
-            Status = status;
-            User = user;
-            Note = note;
-
-            OnUpdate(data);
-
-            if (status == Status.Accepted || status == Status.Rejected)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                OnExit();
-                State.Run();
+                foreach (Action a in e.NewItems)
+                {
+                    a.OnExitEvent += ActionExit;
+                    a.OnUpdateEvent += ActionUpdate;
+                }
             }
         }
+        
+        private void ActionUpdate(object sender, EventArgs e)
+        {
+            OnUpdateEvent?.Invoke(this, EventArgs.Empty);
+        }
 
-        protected abstract void OnEnter();
-        protected abstract void OnUpdate(Dictionary<string, object> data);
-        protected abstract void OnExit();
+        private void ActionExit(object sender, EventArgs e)
+        {
+            var actionsRemaining = Actions.Any(x => !x.IsFinished && x.Status != Status.Skipped);
+            if(!actionsRemaining)
+                OnExitEvent?.Invoke(this, EventArgs.Empty);
+        }
 
+        public Status GetStatus()
+        {
+            if (Actions.All(x => x.Status == Status.None)) return Status.None;
+            if (Actions.All(x => x.Status == Status.Skipped)) return Status.Skipped;
+
+            var actionsWithoutSkipped = Actions.Where(x => x.Status != Status.Skipped);
+
+            if (SuccessCondition == SuccessCondition.All)
+            {
+                if (actionsWithoutSkipped.Any(x => x.Status == Status.Failure)) return Status.Failure;
+                if (actionsWithoutSkipped.Any(x => x.Status == Status.InProgress)) return Status.InProgress;
+                if (actionsWithoutSkipped.All(x => x.Status == Status.Success)) return Status.Success;
+            }
+            else if(SuccessCondition == SuccessCondition.Any)
+            {
+                if (actionsWithoutSkipped.Any(x => x.Status == Status.Success)) return Status.Success;
+                if (actionsWithoutSkipped.Any(x => x.Status == Status.InProgress)) return Status.InProgress;
+                if (actionsWithoutSkipped.All(x => x.Status == Status.Failure)) return Status.Failure;
+            }
+
+            return Status.None;
+        }
+
+        internal void Enter()
+        {
+            var stepStatus = GetStatus();
+            if (stepStatus != Status.None && stepStatus != Status.InProgress)
+                throw new ApplicationException($"Cannot enter a completed step. Step status: {stepStatus}");
+
+            foreach (var a in Actions.Where(x => x.Status == Status.None))
+            {
+                //maybe in the future this should use similar start status to above
+                a.Enter();
+            }
+
+            OnUpdateEvent?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

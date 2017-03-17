@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,29 +23,44 @@ namespace WorkFlowExample
 
         private static WorkFlowState GetNewWorkFlow()
         {
-            var workflow =
-                new WorkFlowState()
-                        .AddStep(new StepGroup
-                        {
-                            Steps = new List<WorkFlowPart>()
-                            {
-                                new WaitReadLineStep { Title = "Step 1" },
-                                new StepGroup
-                                {
-                                    Condition = Condition.AND,
-                                    Steps = new List<WorkFlowPart>()
-                                    {
-                                        new WaitReadLineStep { Title = "Step 2.1" },
-                                        new WaitReadLineStep { Title = "Step 2.2" },
-                                        new WaitReadLineStep { Title = "Step 2.3" }
-                                    }
-                                },
-                                new WaitReadLineStep
-                                {
-                                    Title = "Step 3"
-                                }
-                            }
-                        });
+            var workflow = new WorkFlowState();
+
+            workflow.Steps.Add(new Step()
+            {
+                Name = "Procurement Review",
+                StartCondition = StartCondition.Success,
+                StartTrigger = StartTrigger.StartAfterPrevious,
+                SuccessCondition = SuccessCondition.All,
+                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                {
+                    new WaitReadLineStep() { Name = "Procurement Approval" }
+                }
+            });
+            
+            workflow.Steps.Add(new Step()
+            {
+                Name = "Financial Review",
+                StartCondition = StartCondition.Success,
+                StartTrigger = StartTrigger.StartAfterPrevious,
+                SuccessCondition = SuccessCondition.All,
+                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                {
+                    new WaitReadLineStep() { Name = "Financial Delegation Approval" }
+                }
+            });
+
+            workflow.Steps.Add(new Step()
+            {
+                Name = "Procurment Release",
+                StartCondition = StartCondition.Success,
+                StartTrigger = StartTrigger.StartAfterPrevious,
+                SuccessCondition = SuccessCondition.All,
+                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                {
+                    new WaitReadLineStep() { Name = "Procurement Approval" }
+                }
+            });
+
 
             return workflow;
         }

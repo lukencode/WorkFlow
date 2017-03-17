@@ -1,30 +1,50 @@
 {
-    "actionGroups": [
-        {
-            "condition": "AND",
-            "actions": [
+    "Steps": [
+        {            
+            "Id": "5fc1cc78-cf40-4db1-aac5-a6bb53a0e42d",
+            "StartCondition": "Success",
+            "StartTrigger": "StartAfterPrevious",
+            "SuccessCondition": "All",
+            "Actions": [                
                 {
-                    "type": "Approval",
-                    "title": "Person 1 Approval",
-                    "description": "Must be approved by person 1",
-                    "person": "jim@example.com"
-                },
-                {
-                    "type": "Approval",
-                    "title": "Person 2 Approval",
-                    "description": "Must be approved by person 2",
-                    "person": "bob@example.com"
+                    "Id": "6bf337a7-f2c1-40c5-8757-5e11bd16c20c",
+                    "Name": "Procurement Review",
+                    "ActionType": "Approval",
+                    "Properties": {
+                        "ApprovalGroup": "Procurement"
+                    }
                 }
             ]
         },
-        {
-            "condition": "AND",
-            "actions": [
+        {            
+            "Id": "5fc1cc78-cf40-4db1-aac5-a6bb53a0e42d",
+            "StartCondition": "Success",
+            "StartTrigger": "StartAfterPrevious",
+            "SuccessCondition": "All",
+            "Actions": [                
                 {
-                    "type": "Approval",
-                    "title": "Finance approval",
-                    "description": "Must be approved by person 2",
-                    "group": "Finance"
+                    "Id": "6bf337a7-f2c1-40c5-8757-5e11bd16c20c",
+                    "Name": "Financial Delegation",
+                    "ActionType": "Approval",
+                    "Properties": {
+                        "ApprovalGroup": "Delegation"
+                    }
+                }
+            ]
+        },
+        {            
+            "Id": "5fc1cc78-cf40-4db1-aac5-a6bb53a0e42d",
+            "StartCondition": "Success",
+            "StartTrigger": "StartAfterPrevious",
+            "SuccessCondition": "All",
+            "Actions": [                
+                {
+                    "Id": "6bf337a7-f2c1-40c5-8757-5e11bd16c20c",
+                    "Name": "Requisition Release",
+                    "ActionType": "Approval",
+                    "Properties": {
+                        "ApprovalGroup": "Procurement"
+                    }
                 }
             ]
         }

@@ -7,22 +7,22 @@ using WorkFlow.Model;
 
 namespace WorkFlowExample
 {
-    public class WriteLineStep : Step
+    public class WriteLineStep : WorkFlow.Model.Action
     {
         protected override void OnEnter()
         {
-            Console.WriteLine($"Entering {Title}: { Id }");
-            Update(Status.Accepted, "system");
+            Console.WriteLine($"Entering {Name}: { Id }");
+            Update(Status.Success, "system");
         }
 
         protected override void OnExit()
         {
-            Console.WriteLine($"Exiting {Title}: { Id } with state: { Status }");
+            Console.WriteLine($"Exiting {Name}: { Id } with state: { Status }");
         }
 
         protected override void OnUpdate(Dictionary<string, object> data)
         {
-            Console.WriteLine($"Updating {Title}: { Id } with state: { Status }");
+            Console.WriteLine($"Updating {Name}: { Id } with state: { Status }");
         }
     }
 }

@@ -43,10 +43,12 @@
   <ItemGroup>
     <Compile Include="IWorkFlowStorage.cs" />
     <Compile Include="MemoryWorkflowStorage.cs" />
+    <Compile Include="Model\StartTrigger.cs" />
+    <Compile Include="Model\SuccessCondition.cs" />
     <Compile Include="Model\WorkflowPart.cs" />
-    <Compile Include="Model\StepGroup.cs" />
     <Compile Include="Model\Step.cs" />
-    <Compile Include="Model\Condition.cs" />
+    <Compile Include="Model\Action.cs" />
+    <Compile Include="Model\StartCondition.cs" />
     <Compile Include="Model\Status.cs" />
     <Compile Include="Model\WorkFlowState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
