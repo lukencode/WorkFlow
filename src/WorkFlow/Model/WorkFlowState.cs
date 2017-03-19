@@ -16,6 +16,7 @@ namespace WorkFlow.Model
         public List<Step> Steps { get; private set; } = new List<Step>();
 
         public DateTime? Started { get; private set; }
+        public DateTime? Updated { get; private set; }
         public DateTime? Completed { get; private set; }
         public Status Status { get; private set; } = Status.None;
 
@@ -28,14 +29,16 @@ namespace WorkFlow.Model
         {
             this.storage = storage;
         }
-        
+
         private void StepUpdate(object sender, EventArgs e)
         {
+            Updated = DateTime.UtcNow;
             Save();
         }
 
         private void StepExit(object sender, EventArgs e)
         {
+            Updated = DateTime.Now;
             Run();
         }
 
@@ -74,6 +77,7 @@ namespace WorkFlow.Model
             {
                 Started = DateTime.UtcNow;
                 Status = Status.InProgress;
+                Save();
             }
 
             //todo maybe use step index instead of dates

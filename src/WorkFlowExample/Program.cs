@@ -1,31 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using WorkFlow;
 using WorkFlow.Model;
+using WorkFlow.Sql;
 
 namespace WorkFlowExample
 {
     class Program
     {
-        static IWorkFlowStorage storage => new MemoryWorkflowStorage();
+        //$"DataSource={Path.Combine(path, $"{appName}.sdf")}";
+        //Data Source=(LocalDB)\v11.0;AttachDbFileName=|DataDirectory|\DatabaseFileName.mdf;InitialCatalog=DatabaseName;Integrated Security=True;MultipleActiveResultSets=True
+        static string connectionString => $@"Data Source=(LocalDB)\v11.0;AttachDbFileName={path}\{appName}.mdf;Integrated Security=True;MultipleActiveResultSets=True";
+        static string appName = "WorkFlowTest";
+
+        static IWorkFlowStorage storage;
+
+        static string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().GetName().CodeBase);
 
         static void Main(string[] args)
         {
+            storage = new WorkFlowSqlStorage(connectionString, appName);
+
             var workflow = GetNewWorkFlow();
             workflow.Run();
 
-            Console.WriteLine("Workflow result: " + workflow.Status);
-
+            Console.WriteLine("Result: " + workflow.Status);
             Console.ReadLine();
         }
 
         private static WorkFlowState GetNewWorkFlow()
         {
-            var workflow = new WorkFlowState();
+            var workflow = new WorkFlowState(storage);
 
             workflow.Steps.Add(new Step()
             {
@@ -33,7 +44,6 @@ namespace WorkFlowExample
                 StartCondition = StartCondition.Any,
                 StartTrigger = StartTrigger.StartAfterPrevious,
                 SuccessCondition = SuccessCondition.All,
-                FailureResult = FailureResult.Ignore,
                 Actions = new List<WorkFlow.Model.Action>()
                 {
                     new WaitReadLineStep() { Name = "Procurement Approval" }

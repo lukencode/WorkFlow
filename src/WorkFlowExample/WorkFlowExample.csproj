@@ -52,6 +52,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WorkFlow.SQL\WorkFlow.Sql.csproj">
+      <Project>{f7988ed5-f642-4bd6-8847-e75facf75b13}</Project>
+      <Name>WorkFlow.Sql</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WorkFlow\WorkFlow.csproj">
       <Project>{feb6656f-3339-47bf-b2f9-1117a7e9490c}</Project>
       <Name>WorkFlow</Name>
