@@ -16,11 +16,23 @@ namespace WorkFlow.Model
         public DateTime? Started { get; private set; }
         public DateTime? Updated { get; private set; }
         public Status Status { get; private set; } = Status.None;
-        
-        internal event EventHandler OnUpdateEvent;
-        internal event EventHandler OnExitEvent;
 
-        public bool CanUpdate => Status == Status.InProgress;
+        private EventHandler _onUpdateEvent;
+        internal event EventHandler OnUpdateEvent
+        {
+            add { if (_onUpdateEvent == null) _onUpdateEvent += value; }
+            remove { _onUpdateEvent -= value; }
+        }
+
+        private event EventHandler _onExitEvent;
+        internal event EventHandler OnExitEvent
+        {
+            add { if (_onExitEvent == null) _onExitEvent += value; }
+            remove { _onExitEvent -= value; }
+        }
+
+        public bool CanUpdate(Status newStatus) => Status == Status.InProgress || (newStatus == Status.Skipped && CanSkip);
+        public bool CanSkip => Status == Status.None;
         public bool IsFinished => Status == Status.Success || Status == Status.Failure;
 
         public Action()
@@ -37,7 +49,7 @@ namespace WorkFlow.Model
         
         public void Update(Status status, string user = null, string note = null, Dictionary<string, object> data = null)
         {
-            if (!CanUpdate) throw new ApplicationException("Cannot update a step without Started status");
+            if (!CanUpdate(status)) throw new ApplicationException("Cannot update a step without Started status");
 
             Updated = DateTime.UtcNow;
             Status = status;
@@ -50,11 +62,11 @@ namespace WorkFlow.Model
             if (IsFinished)
             {
                 OnExit();
-                OnExitEvent?.Invoke(this, EventArgs.Empty);
+                _onExitEvent?.Invoke(this, EventArgs.Empty);
             }
             else
             {
-                OnUpdateEvent?.Invoke(this, EventArgs.Empty);
+                _onExitEvent?.Invoke(this, EventArgs.Empty);
             }
         }
 

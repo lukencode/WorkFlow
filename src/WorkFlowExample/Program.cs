@@ -18,6 +18,8 @@ namespace WorkFlowExample
             var workflow = GetNewWorkFlow();
             workflow.Run();
 
+            Console.WriteLine("Workflow result: " + workflow.Status);
+
             Console.ReadLine();
         }
 
@@ -28,10 +30,11 @@ namespace WorkFlowExample
             workflow.Steps.Add(new Step()
             {
                 Name = "Procurement Review",
-                StartCondition = StartCondition.Success,
+                StartCondition = StartCondition.Any,
                 StartTrigger = StartTrigger.StartAfterPrevious,
                 SuccessCondition = SuccessCondition.All,
-                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                FailureResult = FailureResult.Ignore,
+                Actions = new List<WorkFlow.Model.Action>()
                 {
                     new WaitReadLineStep() { Name = "Procurement Approval" }
                 }
@@ -40,10 +43,10 @@ namespace WorkFlowExample
             workflow.Steps.Add(new Step()
             {
                 Name = "Financial Review",
-                StartCondition = StartCondition.Success,
+                StartCondition = StartCondition.Any,
                 StartTrigger = StartTrigger.StartAfterPrevious,
                 SuccessCondition = SuccessCondition.All,
-                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                Actions = new List<WorkFlow.Model.Action>()
                 {
                     new WaitReadLineStep() { Name = "Financial Delegation Approval" }
                 }
@@ -55,7 +58,7 @@ namespace WorkFlowExample
                 StartCondition = StartCondition.Success,
                 StartTrigger = StartTrigger.StartAfterPrevious,
                 SuccessCondition = SuccessCondition.All,
-                Actions = new ObservableCollection<WorkFlow.Model.Action>()
+                Actions = new List<WorkFlow.Model.Action>()
                 {
                     new WaitReadLineStep() { Name = "Procurement Approval" }
                 }

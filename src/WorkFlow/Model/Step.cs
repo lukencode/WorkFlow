@@ -15,28 +15,16 @@ namespace WorkFlow.Model
         public StartCondition StartCondition { get; set; } = StartCondition.Success;
         public StartTrigger StartTrigger { get; set; } = StartTrigger.StartAfterPrevious;
         public SuccessCondition SuccessCondition { get; set; } = SuccessCondition.All;
-        public ObservableCollection<Action> Actions { get; set; }
+        public FailureResult FailureResult { get; set; } = FailureResult.FailWorkflow;
+        public List<Action> Actions { get; set; }
 
         internal event EventHandler OnUpdateEvent;
         internal event EventHandler OnExitEvent;
 
         public Step()
         {
-            Actions = new ObservableCollection<Action>();
-            Actions.CollectionChanged += ActionsChanged;
+            Actions = new List<Action>();
             Id = Guid.NewGuid().ToString();
-        }
-
-        private void ActionsChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (Action a in e.NewItems)
-                {
-                    a.OnExitEvent += ActionExit;
-                    a.OnUpdateEvent += ActionUpdate;
-                }
-            }
         }
         
         private void ActionUpdate(object sender, EventArgs e)
@@ -47,8 +35,7 @@ namespace WorkFlow.Model
         private void ActionExit(object sender, EventArgs e)
         {
             var actionsRemaining = Actions.Any(x => !x.IsFinished && x.Status != Status.Skipped);
-            if(!actionsRemaining)
-                OnExitEvent?.Invoke(this, EventArgs.Empty);
+            if(!actionsRemaining) OnExitEvent?.Invoke(this, EventArgs.Empty);
         }
 
         public Status GetStatus()
@@ -83,10 +70,20 @@ namespace WorkFlow.Model
             foreach (var a in Actions.Where(x => x.Status == Status.None))
             {
                 //maybe in the future this should use similar start status to above
+                a.OnExitEvent += ActionExit;
+                a.OnUpdateEvent += ActionUpdate;
                 a.Enter();
             }
 
             OnUpdateEvent?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal void SkipStep()
+        {
+            foreach (var a in Actions.Where(a => a.Status == Status.None))
+                a.Update(Status.Skipped);
+
+            OnExitEvent?.Invoke(this, EventArgs.Empty);
         }
     }
 }

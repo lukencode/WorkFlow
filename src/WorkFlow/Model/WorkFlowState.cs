@@ -13,12 +13,15 @@ namespace WorkFlow.Model
         private readonly IWorkFlowStorage storage;
 
         public string Id { get; private set; }
-        public ObservableCollection<Step> Steps { get; private set; } = new ObservableCollection<Step>();
+        public List<Step> Steps { get; private set; } = new List<Step>();
+
+        public DateTime? Started { get; private set; }
+        public DateTime? Completed { get; private set; }
+        public Status Status { get; private set; } = Status.None;
 
         public WorkFlowState()
         {
             Id = Guid.NewGuid().ToString();
-            Steps.CollectionChanged += StepsChanged;
         }
 
         public WorkFlowState(IWorkFlowStorage storage) : this()
@@ -33,13 +36,20 @@ namespace WorkFlow.Model
 
         private void StepExit(object sender, EventArgs e)
         {
-            Save();
             Run();
         }
 
         public IEnumerable<Step> GetNextSteps(StartCondition startCondition)
         {
-            var queue = new Queue<Step>(Steps.Where(x => x.StartCondition == startCondition && x.GetStatus() == Status.None));
+            var validSteps = from s in Steps
+                             where (s.StartCondition == StartCondition.Any || s.StartCondition == startCondition)
+                             && s.GetStatus() == Status.None
+                             select s;
+
+            var queue = new Queue<Step>(validSteps);
+
+            if (!queue.Any()) yield break;
+
             yield return queue.Dequeue();
 
             while(queue.Any())
@@ -56,20 +66,16 @@ namespace WorkFlow.Model
 
         public Action GetAction(string id) => Steps.SelectMany(x => x.Actions).FirstOrDefault(x => x.Id == id);
 
-        private void StepsChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (Step s in e.NewItems)
-                {
-                    s.OnExitEvent += StepExit;
-                    s.OnUpdateEvent += StepUpdate;
-                }
-            }
-        }
+        private bool IsCompletedStatus(Status status) => Status == Status.Failure || Status == Status.Success;
 
         public void Run()
         {
+            if (!Started.HasValue)
+            {
+                Started = DateTime.UtcNow;
+                Status = Status.InProgress;
+            }
+
             //todo maybe use step index instead of dates
             var previousStep = (from s in Steps
                                 let status = s.GetStatus()
@@ -79,16 +85,58 @@ namespace WorkFlow.Model
                                 orderby latestAction.Updated descending
                                 select new { Step = s, Status = status }).FirstOrDefault();
 
-            if (previousStep != null && previousStep.Status == Status.InProgress) return; 
+            if (previousStep != null && previousStep.Status == Status.InProgress) return;
 
             var previousStepStatus = previousStep?.Status ?? Status.Success; //default to success    
             var nextStepStartCondition = previousStepStatus == Status.Success ? StartCondition.Success : StartCondition.Failure;
             var nextSteps = GetNextSteps(nextStepStartCondition);
 
-            foreach(var s in nextSteps)
+            foreach (var s in nextSteps)
             {
+                //ensure events hooked up
+                s.OnExitEvent += StepExit;
+                s.OnUpdateEvent += StepUpdate;
+
                 s.Enter();
             }
+
+            Status = GetStatus();
+
+            if(IsCompletedStatus(Status))
+            {
+                if(Status == Status.Failure)
+                    SkipRemainingSteps();
+
+                Completed = DateTime.UtcNow;
+            }
+                        
+            Save();
+        }
+
+        private void SkipRemainingSteps()
+        {
+            var remainingSteps = Steps.Where(x => x.GetStatus() == Status.None);
+            foreach (var s in remainingSteps)
+            {
+                s.SkipStep();
+            }
+        }
+
+        private Status GetStatus()
+        {
+            var stepStatuses = Steps.Select(x => new { Step = x, Status = x.GetStatus(), FailureResult = x.FailureResult });
+
+            if (stepStatuses.Any(x => x.Status == Status.InProgress)) return Status.InProgress;
+            if (stepStatuses.All(x => x.Status == Status.None)) return Status.None;
+            if (stepStatuses.All(x => x.Status == Status.Skipped)) return Status.Skipped;
+
+            var withoutIgnored = stepStatuses.Where(x => x.Status != Status.Skipped && x.FailureResult == FailureResult.FailWorkflow);
+
+            if (withoutIgnored.Any(x => x.Status == Status.Failure)) return Status.Failure;
+            if (withoutIgnored.Any(x => x.Status == Status.None || x.Status == Status.InProgress)) return Status.InProgress;
+            if (withoutIgnored.All(x => x.Status == Status.Success)) return Status.Success;
+
+            throw new ApplicationException("Invalid workflow status");
         }
 
         internal void Save() //somehow transactions?
